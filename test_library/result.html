@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Result | SRIPATUM LIBRARY</title>
+    <script src="script.js"></script>
+    <style>
+        body {
+            font-family: "Prompt", sans-serif;
+            background: #f3f5f8;
+            margin: 0;
+        }
+
+        .sidebar {
+            width: 220px;
+            background: #eaf0fa;
+            height: 100vh;
+            position: fixed;
+            padding: 20px;
+        }
+
+        .content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+
+        .room {
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            background: #0c4da2;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h3>SRIPATUM<br>LIBRARY</h3>
+        <hr>
+        <a href="search.html">กลับไปค้นหา</a><br>
+        <a href="signin.html">ออกจากระบบ</a>
+    </div>
+
+    <div class="content">
+        <h3>รายการห้องสมุด</h3>
+        <div id="roomContainer"></div>
+    </div>
+
+    <script>
+        const rooms = JSON.parse(localStorage.getItem("rooms") || "[]");
+
+        async function handleBook(roomId) {
+            const startTime = new Date().toISOString();
+            const endTime = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // +2 ชั่วโมง
+
+            const result = await bookRoom(roomId, startTime, endTime);
+            alert(result.message || "จองห้องสำเร็จ");
+        }
+
+
+        function renderRooms() {
+            const container = document.getElementById("roomContainer");
+            container.innerHTML = "";
+            rooms.forEach(r => {
+                container.innerHTML += `
+          <div class="room">
+            <b>${r.name}</b><br>
+            จำนวนที่นั่ง: ${r.capacity}<br>
+            สถานที่: ${r.location}<br>
+            <button onclick="handleBook(${r.id})">จองห้อง</button>
+          </div>`;
+            });
+        }
+
+        renderRooms();
+    </script>
+</body>
+
+</html>

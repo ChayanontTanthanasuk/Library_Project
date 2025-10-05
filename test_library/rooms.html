@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SRIPATUM LIBRARY | จองห้องสมุด</title>
+  <style>
+    body { font-family: "Prompt", sans-serif; background: #f3f5f8; margin: 0; }
+    .sidebar { width: 220px; background: #eaf0fa; height: 100vh; position: fixed; padding: 20px; }
+    .content { margin-left: 260px; padding: 30px; }
+    .room { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; }
+    .status { font-weight: bold; }
+    .available { color: green; }
+    .occupied { color: red; }
+    button { background: #0c4da2; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .search-box { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
+    input { padding: 6px; border-radius: 6px; border: 1px solid #ccc; margin-right: 5px; }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar">
+    <h3>SRIPATUM<br>LIBRARY</h3>
+    <hr />
+    <a href="signin.html">ออกจากระบบ</a>
+  </div>
+
+  <div class="content">
+    <h3>ค้นหาห้องสมุดที่ว่าง</h3>
+
+    <div class="search-box">
+      <label>วันที่:</label>
+      <input type="date" id="dateInput" />
+      <label>เวลาเริ่ม:</label>
+      <input type="time" id="startInput" />
+      <label>เวลาสิ้นสุด:</label>
+      <input type="time" id="endInput" />
+      <button onclick="searchRooms()">ค้นหา</button>
+    </div>
+
+    <div id="roomContainer">กรุณาเลือกวันที่และเวลา</div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:3000/api";
+
+    // 🧭 ค้นหาห้องทั้งหมด
+    async function searchRooms() {
+      const date = document.getElementById("dateInput").value;
+      const start = document.getElementById("startInput").value;
+      const end = document.getElementById("endInput").value;
+      if (!date || !start || !end) {
+        alert("กรุณาเลือกวันที่และเวลาให้ครบ");
+        return;
+      }
+
+      const startTime = new Date(`${date}T${start}:00`).toISOString();
+      const endTime = new Date(`${date}T${end}:00`).toISOString();
+
+      const res = await fetch(`${API_BASE}/rooms`);
+      const rooms = await res.json();
+      renderRooms(rooms, startTime, endTime);
+    }
+
+    // 🎯 จองห้อง
+    async function handleBook(roomId) {
+      const token = localStorage.getItem("token");
+      const date = document.getElementById("dateInput").value;
+      const start = document.getElementById("startInput").value;
+      const end = document.getElementById("endInput").value;
+
+      const startTime = new Date(`${date}T${start}:00`).toISOString();
+      const endTime = new Date(`${date}T${end}:00`).toISOString();
+
+      const res = await fetch(`${API_BASE}/bookings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ roomId, startTime, endTime }),
+      });
+
+      const result = await res.json();
+      alert(result.message);
+      searchRooms(); // refresh list
+    }
+
+    // 🧩 แสดงห้องพร้อมสถานะ
+    function renderRooms(rooms, startTime, endTime) {
+      const container = document.getElementById("roomContainer");
+      container.innerHTML = "";
+
+      if (!rooms.length) {
+        container.innerHTML = "<p>ไม่พบข้อมูลห้อง</p>";
+        return;
+      }
+
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+
+      rooms.forEach((r) => {
+        // ✅ ตรวจว่ามี booking ช่วงเวลานี้ไหม
+        const isBooked = r.bookings.some((b) => {
+          const bStart = new Date(b.startTime);
+          const bEnd = new Date(b.endTime);
+          return start < bEnd && end > bStart; // เวลาทับกัน
+        });
+
+        container.innerHTML += `
+          <div class="room">
+            <div>
+              <b>${r.name}</b><br>
+              จำนวนที่นั่ง: ${r.capacity}<br>
+              สถานที่: ${r.location}<br>
+              สถานะ:
+              <span class="status ${isBooked ? "occupied" : "available"}">
+                ${isBooked ? "ถูกจอง" : "ว่าง"}
+              </span>
+            </div>
+            <button ${isBooked ? "disabled" : ""} onclick="handleBook(${r.id})">
+              จองห้อง
+            </button>
+          </div>`;
+      });
+    }
+  </script>
+</body>
+</html>

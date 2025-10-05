@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up | SRIPATUM LIBRARY</title>
+  <script src="script.js"></script>
+  <style>
+    body { font-family: "Prompt", sans-serif; background:#f4f6fb; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
+    .card { background:#fff; padding:30px; border-radius:12px; width:320px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.15); }
+    input { width:100%; padding:10px; margin-bottom:12px; border:1px solid #ccc; border-radius:6px; }
+    button { width:100%; padding:10px; background:#0c4da2; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
+    button:hover { background:#083b88; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Sign Up To Library</h2>
+    <input id="studentId" placeholder="Student ID">
+    <input id="name" placeholder="Full Name">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="handleRegister()">Sign Up</button>
+    <p>มีบัญชีอยู่แล้ว? <a href="signin.html">เข้าสู่ระบบ</a></p>
+  </div>
+
+  <script>
+    async function handleRegister() {
+      const id = document.getElementById("studentId").value;
+      const name = document.getElementById("name").value;
+      const pass = document.getElementById("password").value;
+
+      const data = await registerStudent(id, name, pass);
+      if (data.student || data.message === "Register success") {
+        alert("สมัครสมาชิกสำเร็จ");
+        window.location.href = "signin.html";
+      } else {
+        alert(data.message || "Register failed");
+      }
+    }
+  </script>
+</body>
+</html>

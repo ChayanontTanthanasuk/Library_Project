@@ -3,17 +3,17 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" 
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int       @id @default(autoincrement())
+model Student {
+  id        Int                  @id @default(autoincrement())
+  studentId String               @unique // ใช้แทน ID Card ในระบบ (เช่น 65062264)
   name      String
-  email     String    @unique
   password  String
-  bookings  Booking[] 
-  createdAt DateTime  @default(now())
+  bookings  BookingParticipant[]
+  createdAt DateTime             @default(now())
 }
 
 model Room {
@@ -21,23 +21,38 @@ model Room {
   name      String
   capacity  Int
   location  String?
-  bookings  Booking[] 
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
 }
 
 model Booking {
-  id        Int       @id @default(autoincrement())
-  userId    Int
-  roomId    Int
-  startTime DateTime
-  endTime   DateTime
-  status    BookingStatus @default(PENDING)
+  id           Int           @id @default(autoincrement())
+  roomId       Int
+  roomName     String 
+  roomCapacity Int 
+  startTime    DateTime
+  endTime      DateTime
+  status       BookingStatus @default(PENDING)
 
-  user      User @relation(fields: [userId], references: [id])
-  room      Room @relation(fields: [roomId], references: [id])
+  participants BookingParticipant[]
+  room         Room                 @relation(fields: [roomId], references: [id])
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+}
+
+model BookingParticipant {
+  id        Int @id @default(autoincrement())
+  studentId Int
+  bookingId Int
+
+  student Student @relation(fields: [studentId], references: [id])
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@unique([studentId, bookingId]) // กันนักศึกษาเดิมจองซ้ำใน booking เดียว
 }
 
 enum BookingStatus {
-  PENDING   // รออนุมัติ
-  CONFIRMED // ยืนยันแล้ว
-  CANCELED  // ยกเลิก
+  PENDING // รอการอนุมัติ
+  CONFIRMED // ยืนยันแล้ว (จองสำเร็จ)
+  CANCELED // ยกเลิกการจอง
 }
