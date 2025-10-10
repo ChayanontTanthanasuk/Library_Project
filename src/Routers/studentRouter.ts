@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { registerStudent, loginStudent, getStudent } from "../Controllers/studentControllers";
+import { authMiddleware } from "../Middleware/auth";
 
 const router = Router();
 
@@ -10,7 +11,7 @@ router.post("/register", registerStudent); // done
 router.post("/login", loginStudent); // done
 
 // ดึง student id
-router.get("/student", getStudent); // done
+router.get("/student", authMiddleware, getStudent); // done
 
 
 export default router;

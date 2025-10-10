@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+import { AuthRequest } from "../Middleware/auth";
+
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
@@ -74,22 +76,34 @@ export const loginStudent = async (req: Request, res: Response) => {
   }
 };
 
-export const getStudent = async (req: Request, res: Response) => {
+export const getStudent = async (req: AuthRequest, res: Response) => {
   try {
-    const { studentId, name } = req.body;
-    
+    // ✅ ดึง studentId จาก token ที่ decode แล้ว
+    const studentId = req.user?.studentId;
+
     if (!studentId) {
-      return res.status(400).json({ message: "studentId is required" });
+      return res.status(400).json({ message: "Missing or invalid token" });
     }
 
-    const getStudent = await prisma.student.findUnique({
-      where: { studentId: studentId },
+    // ✅ ค้นหานักศึกษาในฐานข้อมูล
+    const student = await prisma.student.findUnique({
+      where: { studentId },
+      select: {
+        id: true,
+        studentId: true,
+        name: true,
+        createdAt: true,
+      },
     });
 
-    if (!getStudent) {
+    if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
+
+    // ✅ ส่งข้อมูลกลับ
+    res.status(200).json({ message: "Student info", student });
   } catch (err: any) {
+    console.error("❌ Error in getStudent:", err);
     res.status(500).json({ message: err.message });
   }
-}
+};
