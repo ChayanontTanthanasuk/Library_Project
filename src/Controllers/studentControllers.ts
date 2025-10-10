@@ -73,3 +73,23 @@ export const loginStudent = async (req: Request, res: Response) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const getStudent = async (req: Request, res: Response) => {
+  try {
+    const { studentId, name } = req.body;
+    
+    if (!studentId) {
+      return res.status(400).json({ message: "studentId is required" });
+    }
+
+    const getStudent = await prisma.student.findUnique({
+      where: { studentId: studentId },
+    });
+
+    if (!getStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+}
