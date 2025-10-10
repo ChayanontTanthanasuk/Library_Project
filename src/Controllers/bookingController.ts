@@ -115,3 +115,55 @@ export const cancelBooking = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const searchAvailableRooms = async (req: AuthRequest, res: Response) => {
+  try {
+    const { date, startTime, endTime } = req.body;
+
+    if (!date || !startTime || !endTime) {
+      return res.status(400).json({
+        message: "Missing required fields (date, startTime, endTime)",
+      });
+    }
+
+    // ✅ รวมวันที่ + เวลา เป็น Date object
+    const start = new Date(`${date}T${startTime}`);
+    const end = new Date(`${date}T${endTime}`);
+
+    // ✅ ดึงห้องทั้งหมด
+    const rooms = await prisma.room.findMany({
+      orderBy: { id: "asc" },
+    });
+
+    // ✅ ตรวจสอบว่าแต่ละห้องว่างไหม
+    const results = await Promise.all(
+      rooms.map(async (room) => {
+        const conflict = await prisma.booking.findFirst({
+          where: {
+            roomId: room.id,
+            status: "CONFIRMED",
+            OR: [
+              { startTime: { lt: end }, endTime: { gt: start } },
+            ],
+          },
+        });
+
+        return {
+          id: room.id,
+          name: room.name,
+          capacity: room.capacity,
+          location: room.location,
+          status: conflict ? "BOOKED" : "AVAILABLE",
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: "Search success",
+      rooms: results,
+    });
+  } catch (err: any) {
+    console.error("❌ Error in searchAvailableRooms:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
