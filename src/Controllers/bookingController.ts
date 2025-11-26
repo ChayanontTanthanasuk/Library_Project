@@ -1,6 +1,6 @@
 import { Response } from "express";
-import { PrismaClient } from "@prisma/client";
-import { AuthRequest } from "../Middleware/auth"; // ✅ import interface
+import { PrismaClient, Room } from "@prisma/client"; // ✅ IMPORT: เพิ่ม Room เพื่อใช้กำหนด Type
+import { AuthRequest } from "../Middleware/auth";
 const prisma = new PrismaClient();
 
 // ➤ จองห้อง
@@ -19,7 +19,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       });
       return;
     }
-    
+
     const start = new Date(startTime);
     const end = new Date(endTime);
 
@@ -137,7 +137,7 @@ export const searchAvailableRooms = async (req: AuthRequest, res: Response) => {
 
     // ✅ ตรวจสอบว่าแต่ละห้องว่างไหม
     const results = await Promise.all(
-      rooms.map(async (room) => {
+      rooms.map(async (room: Room) => { // 🎯 การแก้ไข: กำหนด Type เป็น 'room: Room' แล้ว
         const conflict = await prisma.booking.findFirst({
           where: {
             roomId: room.id,
@@ -147,7 +147,7 @@ export const searchAvailableRooms = async (req: AuthRequest, res: Response) => {
             ],
           },
         });
- 
+
         return {
           id: room.id,
           name: room.name,
