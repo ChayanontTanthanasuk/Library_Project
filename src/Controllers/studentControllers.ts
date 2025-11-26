@@ -62,8 +62,8 @@ export const loginStudent = async (req: Request, res: Response) => {
       res.status(401).json({ message: "Invalid studentId or password" });
       return;
     }
-
-    // สร้าง JWT Token
+    
+      // สร้าง JWT Token
     const token = jwt.sign(
       { studentId: student.studentId, id: student.id },
       JWT_SECRET,

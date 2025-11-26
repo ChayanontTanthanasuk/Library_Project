@@ -19,7 +19,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       });
       return;
     }
-
+    
     const start = new Date(startTime);
     const end = new Date(endTime);
 
@@ -147,7 +147,7 @@ export const searchAvailableRooms = async (req: AuthRequest, res: Response) => {
             ],
           },
         });
-
+ 
         return {
           id: room.id,
           name: room.name,
