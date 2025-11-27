@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { PrismaClient, Room } from "@prisma/client"; // ✅ IMPORT: เพิ่ม Room เพื่อใช้กำหนด Type
+import { PrismaClient, Room } from "@prisma/client"; //  IMPORT: เพิ่ม Room เพื่อใช้กำหนด Type
 import { AuthRequest } from "../Middleware/auth";
 const prisma = new PrismaClient();
 
@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export const createBooking = async (req: AuthRequest, res: Response) => {
   try {
     const { roomId, startTime, endTime } = req.body;
-    const studentId = req.user?.id; // ✅ ดึงจาก token โดยตรง
+    const studentId = req.user?.id; //  ดึงจาก token โดยตรง
 
     console.log("DEBUG req.user:", req.user);
     console.log("DEBUG req.body:", req.body);
@@ -23,21 +23,21 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
     const start = new Date(startTime);
     const end = new Date(endTime);
 
-    // ✅ ตรวจว่านักศึกษามีอยู่จริงไหม
+    //  ตรวจว่านักศึกษามีอยู่จริงไหม
     const student = await prisma.student.findUnique({ where: { id: studentId } });
     if (!student) {
       res.status(404).json({ message: "Student not found" });
       return;
     }
 
-    // ✅ ตรวจว่าห้องมีจริงไหม
+    //  ตรวจว่าห้องมีจริงไหม
     const room = await prisma.room.findUnique({ where: { id: roomId } });
     if (!room) {
       res.status(404).json({ message: "Room not found" });
       return;
     }
 
-    // ✅ ตรวจเวลาซ้ำ
+    //  ตรวจเวลาซ้ำ
     const conflict = await prisma.booking.findFirst({
       where: {
         roomId,
@@ -56,7 +56,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    // ✅ สร้าง booking
+    //  สร้าง booking
     const booking = await prisma.booking.create({
       data: {
         roomId,
@@ -74,7 +74,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json({ message: "Booking created", booking });
   } catch (err: any) {
-    console.error("❌ Error in createBooking:", err);
+    console.error(" Error in createBooking:", err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -104,10 +104,10 @@ export const cancelBooking = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    // ✅ ลบผู้เข้าร่วมก่อน
+    //  ลบผู้เข้าร่วมก่อน
     await prisma.bookingParticipant.deleteMany({ where: { bookingId } });
 
-    // ✅ ลบ booking
+    //  ลบ booking
     const deleted = await prisma.booking.delete({ where: { id: bookingId } });
 
     res.status(200).json({ message: "Booking deleted", booking: deleted });
@@ -126,16 +126,16 @@ export const searchAvailableRooms = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // ✅ รวมวันที่ + เวลา เป็น Date object
+    //  รวมวันที่ + เวลา เป็น Date object
     const start = new Date(`${date}T${startTime}`);
     const end = new Date(`${date}T${endTime}`);
 
-    // ✅ ดึงห้องทั้งหมด
+    //  ดึงห้องทั้งหมด
     const rooms = await prisma.room.findMany({
       orderBy: { id: "asc" },
     });
 
-    // ✅ ตรวจสอบว่าแต่ละห้องว่างไหม
+    //  ตรวจสอบว่าแต่ละห้องว่างไหม
     const results = await Promise.all(
       rooms.map(async (room: Room) => { // 🎯 การแก้ไข: กำหนด Type เป็น 'room: Room' แล้ว
         const conflict = await prisma.booking.findFirst({
@@ -163,7 +163,7 @@ export const searchAvailableRooms = async (req: AuthRequest, res: Response) => {
       rooms: results,
     });
   } catch (err: any) {
-    console.error("❌ Error in searchAvailableRooms:", err);
+    console.error(" Error in searchAvailableRooms:", err);
     res.status(500).json({ message: err.message });
   }
 };
