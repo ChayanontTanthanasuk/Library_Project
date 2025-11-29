@@ -1,0 +1,15 @@
+# Dependencies
+node_modules
+dist
+.env
+
+# Dev files
+.vscode
+*.ts
+*.map
+
+# Config files
+package-lock.json
+
+# Logs
+npm-debug.log*

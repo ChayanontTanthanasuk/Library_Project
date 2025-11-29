@@ -1,5 +1,31 @@
+# Dependencies and OS files
 node_modules
-# Keep environment variables out of version control
-.env
+.DS_Store
 
-/src/generated/prisma
+# Environment Variables (Keep sensitive data out)
+.env
+.env.local
+.env.development
+.env.production
+
+# Build/Transpilation Output (Generated JavaScript files)
+/dist
+/build
+/out
+
+# Prisma Files
+/src/generated/prisma  # โฟลเดอร์ที่ Prisma Generate Client
+prisma/migrations       # เก็บไฟล์ migration ที่ Prisma สร้างขึ้นมา
+
+# TypeScript/Source Maps
+*.tsbuildinfo
+*.js.map
+*.d.ts.map
+
+# Logs
+npm-debug.log
+yarn-error.log
+
+# IDE and Editor files
+.vscode
+*.sublime-workspace
